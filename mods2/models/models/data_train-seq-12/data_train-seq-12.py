@@ -1,0 +1,5 @@
+data_select_query = 'conn|in_count_uid~A;ssh|in~B#window_start,window_end'
+train_time_range_begin = '20200415'
+train_time_range_end   = '20200430'
+test_time_range_begin = '20200501'
+test_time_range_end   = '20200507'

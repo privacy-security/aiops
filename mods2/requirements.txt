@@ -1,0 +1,14 @@
+Django>=3.0,<4.0
+psycopg2-binary>=2.8
+matplotlib==3.3.2
+numpy<1.19.0,>=1.16.0
+pandas==1.1.4
+tensorflow-gpu==2.3.1
+keras==2.4.3
+joblib==0.17.0
+scikit-learn==0.23.2
+mxnet==1.7.0.post1
+mxnet-cu101==1.7.0
+django-environ
+plotly
+kafka-python

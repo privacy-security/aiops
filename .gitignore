@@ -1,0 +1,10 @@
+**/__pycache__/
+**/*.pyc
+nohup.out
+._.DS_Store
+.DS_Store
+.idea/
+.ipynb_checkpoints/
+.python-version
+logs/
+.htpasswd

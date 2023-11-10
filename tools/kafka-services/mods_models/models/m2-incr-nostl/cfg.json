@@ -1,0 +1,41 @@
+{
+  "model_name": "m2-incr-nostl",
+  "teacher_forcing": false,
+  "units": 60,
+  "droupout_rate": 0.6,
+  "remove_peak": false,
+  "differential": false,
+  "forecast_steps": 1,
+  "forecast_len": 1,
+  "test_stl": false,
+  "stl_period": 24,
+  "train": {
+    "data_file": "data/buffer-all-1M.tsv",
+    "epochs": 100,
+    "epochs_incremental": 2,
+    "epochs_patience": 10
+  },
+  "tsg": {
+    "length": 24,
+    "sampling_rate": 1,
+    "stride": 1,
+    "batch_size": 1
+  },
+  "data": {
+    "split": 0.8,
+    "X": [
+      "conn_count_uid_in",
+      "conn_count_uid_out",
+      "dns_count_uid_out",
+      "http_count_uid_in",
+      "ssl_count_uid_in"
+    ],
+    "Y": [
+      "conn_count_uid_in",
+      "conn_count_uid_out",
+      "dns_count_uid_out",
+      "http_count_uid_in",
+      "ssl_count_uid_in"
+    ]
+  }
+}

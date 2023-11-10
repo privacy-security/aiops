@@ -1,0 +1,200 @@
+version: "3.9"
+services:
+  zookeeper:
+    image: wurstmeister/zookeeper
+    container_name: zookeeper
+    networks:
+      - default
+  kafka01:
+    image: wurstmeister/kafka
+    container_name: kafka01
+    ports:
+      - "9093:9093"
+    environment:
+      KAFKA_OPTS: "-Djava.net.preferIPv4Stack=True"
+      HOSTNAME_COMMAND: hostname.sh
+      KAFKA_LISTENERS: INSIDE://:9092,OUTSIDE://:9093
+      KAFKA_ADVERTISED_LISTENERS: INSIDE://:9092,OUTSIDE://_{HOSTNAME_COMMAND}:9093
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INSIDE:PLAINTEXT,OUTSIDE:PLAINTEXT
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_BROKER_ID: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_LOG_RETENTION_HOURS: 2160
+      KAFKA_INTER_BROKER_LISTENER_NAME: INSIDE
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /etc/localtime:/etc/localtime:ro
+      - ./kafka/hostname.sh:/usr/bin/hostname.sh
+      - kafka01_data:/kafka
+    networks:
+      - default
+    depends_on:
+      - zookeeper
+  kafka02:
+    image: wurstmeister/kafka
+    container_name: kafka02
+    ports:
+      - "9094:9094"
+    environment:
+      KAFKA_OPTS: "-Djava.net.preferIPv4Stack=True"
+      HOSTNAME_COMMAND: hostname.sh
+      KAFKA_LISTENERS: INSIDE://:9092,OUTSIDE://:9094
+      KAFKA_ADVERTISED_LISTENERS: INSIDE://:9092,OUTSIDE://_{HOSTNAME_COMMAND}:9094
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INSIDE:PLAINTEXT,OUTSIDE:PLAINTEXT
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_BROKER_ID: 2
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_LOG_RETENTION_HOURS: 2160
+      KAFKA_INTER_BROKER_LISTENER_NAME: INSIDE
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /etc/localtime:/etc/localtime:ro
+      - ./kafka/hostname.sh:/usr/bin/hostname.sh
+      - kafka02_data:/kafka
+    networks:
+      - default
+    depends_on:
+      - zookeeper
+  kafka03:
+    image: wurstmeister/kafka
+    container_name: kafka03
+    ports:
+      - "9095:9095"
+    environment:
+      KAFKA_OPTS: "-Djava.net.preferIPv4Stack=True"
+      HOSTNAME_COMMAND: hostname.sh
+      KAFKA_LISTENERS: INSIDE://:9092,OUTSIDE://:9095
+      KAFKA_ADVERTISED_LISTENERS: INSIDE://:9092,OUTSIDE://_{HOSTNAME_COMMAND}:9095
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INSIDE:PLAINTEXT,OUTSIDE:PLAINTEXT
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_BROKER_ID: 3
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_LOG_RETENTION_HOURS: 2160
+      KAFKA_INTER_BROKER_LISTENER_NAME: INSIDE
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /etc/localtime:/etc/localtime:ro
+      - ./kafka/hostname.sh:/usr/bin/hostname.sh
+      - kafka03_data:/kafka
+    networks:
+      - default
+    depends_on:
+      - zookeeper
+  mods2_db:
+    image: postgres
+    container_name: mods2_db
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+  mods2:
+    build: ./mods2
+    image: mods2
+    container_name: mods2
+    runtime: nvidia
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=all
+      - DEBIAN_FRONTEND=noninteractive
+    command: python manage.py runserver 0.0.0.0:80
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ./mods2:/code
+    depends_on:
+      - mods2_db
+  elastic:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.11.1
+    container_name: elastic
+    environment:
+      - node.name=elastic
+      - cluster.name=elastic-cluster
+      - discovery.seed_hosts=
+      - cluster.initial_master_nodes=elastic
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - elastic_data:/usr/share/elasticsearch/data
+      - ./elasticsearch/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+    ports:
+      - "127.0.0.1:9200:9200"
+    depends_on:
+      - mods2
+    networks:
+      - elastic
+  kibana:
+    image: docker.elastic.co/kibana/kibana:7.11.1
+    container_name: kibana
+    environment:
+      ELASTICSEARCH_URL: http://elastic:9200
+      ELASTICSEARCH_HOSTS: '["http://elastic:9200"]'
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ./kibana/config/kibana.yml:/usr/share/kibana/config/kibana.yml
+    depends_on:
+      - elastic
+    networks:
+      - elastic
+  reverse:
+    container_name: reverse
+    hostname: reverse
+    image: nginx
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - nginx_config:/etc/nginx
+      - nginx_certs:/etc/ssl/private
+    depends_on:
+      - kibana
+      - mods2
+    networks:
+      - elastic
+      - default
+
+networks:
+  elastic:
+    driver: bridge
+
+volumes:
+  nginx_config:
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: ./nginx/config
+  nginx_certs:
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: ./nginx/certs
+  kafka01_data:
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: ./kafka/kafka01_data
+  kafka02_data:
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: ./kafka/kafka02_data
+  kafka03_data:
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: ./kafka/kafka03_data
+  elastic_data:
+      driver: local
+      driver_opts:
+        o: bind
+        type: none
+        device: ./elasticsearch/data
