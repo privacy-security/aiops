@@ -1,6 +1,8 @@
-# DEPMODS - Deployment of MODS - alias MODS2
+# Network Security AIOps for Online Stream Data Monitoring
+This repository contains the source code for the corresponding [**paper**](https://doi.org/10.1007/s00521-024-09863-z).
 
-## Deployment
+
+## DEPMODS - Deployment of MODS alias MODS-aiops
 
 ### 1. Clone MODS2 repository
 
@@ -126,4 +128,19 @@ After all these steps are done correctly, you should see current status and pred
 ### Kafka
 ```shell
 $ docker run -it --rm edenhill/kafkacat:1.7.0-PRE1 kafkacat -C -b XXX.XXX.XXX.XXX:9093 -t mods-agg-10m
+```
+
+## Citation
+
+```
+@article{gnsd2024network,
+  title={Network security AIOps for online stream data monitoring},
+  author={Nguyen, Giang and Dlugolinsky, Stefan and Tran, Viet and L{\'o}pez Garc{\'\i}a, {\'A}lvaro},
+  journal={Neural Computing and Applications},
+  pages={1--25},
+  year={2024},
+  publisher={Springer},
+  doi={10.1007/s00521-024-09863-z},
+  note={CC BY-NC-ND 4.0}
+}
 ```
