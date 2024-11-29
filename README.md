@@ -141,6 +141,6 @@ $ docker run -it --rm edenhill/kafkacat:1.7.0-PRE1 kafkacat -C -b XXX.XXX.XXX.XX
   year={2024},
   publisher={Springer},
   doi={10.1007/s00521-024-09863-z},
-  note={CC BY-NC-ND 4.0}
+  note={CC BY 4.0}
 }
 ```
